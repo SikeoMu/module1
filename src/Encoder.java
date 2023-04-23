@@ -11,21 +11,19 @@ class Encoder {
     private static final String alphabet = "АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯабвгдеёжзийклмнопрстуфхцчшщъыьэюя.,\":-!? ";
     private static final StringBuilder readFileAsString = new StringBuilder();
     private static String filePath;
+    private static StringBuilder result = new StringBuilder();
 
-    public static void encryptDecipher(String start) throws Exception {
+    public static void encryptDecipher(String selectWorkMethod) throws Exception {
         Scanner scanner = new Scanner(System.in);
-        StringBuilder result;
         saveText();
-        if (start.equals("3")){
-            result = bruteForce();
-        }else {
+        if( selectWorkMethod.equals("1")){
             System.out.println("Введите ключ");
-        }
-
-        if (start.equals("1")){
             result = shiftsEachCharacterByKey(scanner.nextInt());
-        }else {
+        } else if (selectWorkMethod.equals("2")) {
+            System.out.println("Введите ключ");
             result = shiftsEachCharacterByKey(scanner.nextInt()*(-1));
+        } else if (selectWorkMethod.equals("3")) {
+            bruteForce();
         }
         createFileWithShiftedText(result);
     }
@@ -92,18 +90,17 @@ class Encoder {
         return true;
     }
 
-    private static StringBuilder bruteForce() {
+    private static void bruteForce() {
         int key = 0;
-        StringBuilder temp;
         do {
             if (key < alphabet.length()) {
-                temp = shiftsEachCharacterByKey( key);
+                System.out.println(key);
+                result= shiftsEachCharacterByKey(-key);
                 key++;
             } else {
                 System.out.println("Расшифровка не удалась");
                 break;
             }
-        } while (checkTextOnFalse(temp));
-        return shiftsEachCharacterByKey( key - 1);
+        } while (checkTextOnFalse(result));
     }
 }
