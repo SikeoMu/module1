@@ -6,22 +6,27 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Scanner;
 
-class  Encoder{
+class Encoder {
 
-    private static String alphabet = "АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯабвгдеёжзийклмнопрстуфхцчшщъыьэюя.,\":-!? ";
-    private static  StringBuilder readFileAsString = new StringBuilder();
+    private static final String alphabet = "АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯабвгдеёжзийклмнопрстуфхцчшщъыьэюя.,\":-!? ";
+    private static final StringBuilder readFileAsString = new StringBuilder();
+    private static String filePath;
 
-    public static  void encrypt(){
-        saveText();
+    public static void encryptDecipher(String start) throws Exception {
         Scanner scanner = new Scanner(System.in);
-        System.out.println("Введите ключ");
-        StringBuilder result = ShiftsEachCharacterByKey(readFileAsString, scanner.nextInt());
-        createFileWithShiftedText(result);
-    }
-
-    public static void decipher (){
+        StringBuilder result;
         saveText();
-        StringBuilder result = bruteForce();
+        if (start.equals("3")){
+            result = bruteForce();
+        }else {
+            System.out.println("Введите ключ");
+        }
+
+        if (start.equals("1")){
+            result = shiftsEachCharacterByKey(scanner.nextInt());
+        }else {
+            result = shiftsEachCharacterByKey(scanner.nextInt()*(-1));
+        }
         createFileWithShiftedText(result);
     }
 
@@ -29,7 +34,7 @@ class  Encoder{
         Scanner scanner = new Scanner(System.in);
         System.out.println("Введите путь к файлу");
 
-        String filePath = scanner.nextLine();
+        filePath = scanner.nextLine();
         while (filePath == null || filePath.isEmpty() || Files.notExists(Paths.get(filePath))) {
             System.out.println("Файл не найден");
             filePath = scanner.nextLine();
@@ -44,24 +49,29 @@ class  Encoder{
         }
     }
 
-    private static StringBuilder ShiftsEachCharacterByKey(StringBuilder text, int key) {
+    private static StringBuilder shiftsEachCharacterByKey(int key) {
+        int alphabetLength = alphabet.length();
+        if (key<0) alphabetLength = alphabetLength*(-1);
         StringBuilder shiftedText = new StringBuilder();
         for (int i = 0; i < readFileAsString.length(); i++) {
             char character = readFileAsString.charAt(i);
             if (alphabet.indexOf(character) == -1) {
                 shiftedText.append(character);
-            } else if (alphabet.indexOf(character) + key >= alphabet.length()) {
-                shiftedText.append(Character.toString(alphabet.charAt(alphabet.indexOf(character) + key - alphabet.length())));
+            } else if (alphabet.indexOf(character) + key >= alphabet.length() || (alphabet.indexOf(character) + key < 0)) {
+                shiftedText.append(alphabet.charAt(alphabet.indexOf(character) + key - alphabetLength));
             } else {
-                shiftedText.append(Character.toString(alphabet.charAt(alphabet.indexOf(character) + key)));
+                shiftedText.append(alphabet.charAt(alphabet.indexOf(character) + key));
             }
         }
         return shiftedText;
     }
 
-    private static void createFileWithShiftedText(StringBuilder shiftedText) {
+    private static void createFileWithShiftedText(StringBuilder shiftedText) throws Exception {
         try {
-            Path path = Paths.get("result.txt");
+            String[] strings = filePath.split(".txt");
+            strings[0] += ".result.txt";
+            filePath = strings[0];
+            Path path = Paths.get(filePath);
             if (Files.exists(path)) {
                 Files.delete(path);
             }
@@ -69,7 +79,7 @@ class  Encoder{
             Files.createFile(path);
             Files.writeString(path, shiftedText);
         } catch (IOException e) {
-            System.out.println(e);
+            throw new Exception(e);
         }
     }
 
@@ -86,14 +96,14 @@ class  Encoder{
         int key = 0;
         StringBuilder temp;
         do {
-            if (key < 74) {
-                temp = ShiftsEachCharacterByKey(readFileAsString, key);
+            if (key < alphabet.length()) {
+                temp = shiftsEachCharacterByKey( key);
                 key++;
             } else {
                 System.out.println("Расшифровка не удалась");
                 break;
             }
         } while (checkTextOnFalse(temp));
-        return ShiftsEachCharacterByKey(readFileAsString,key-1);
+        return shiftsEachCharacterByKey( key - 1);
     }
 }
